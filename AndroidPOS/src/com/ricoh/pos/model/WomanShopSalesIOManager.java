@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -461,13 +462,17 @@ public class WomanShopSalesIOManager {
                         Order order = orders.get(orderNo);
                         Product product = order.getProduct();
 
+                        BigDecimal priceBD = new BigDecimal(product.getPrice());
+                        BigDecimal totalBD = new BigDecimal(product.getPrice() * order.getNumberOfOrder());
+                        BigDecimal discountBD = new BigDecimal(record.getDiscountValue());
+
                         String result = product.getCode() + ","
                                 + product.getCategory() + ","
                                 + product.getName() + ","
                                 + order.getNumberOfOrder() + ","
-                                + String.format("%.2f", product.getPrice()) + ","
-                                + String.format("%.2f", product.getPrice() * order.getNumberOfOrder()) + ","
-                                + String.format("%.2f", record.getDiscountValue()) + ","
+                                + priceBD.setScale(2, BigDecimal.ROUND_HALF_UP) + ","
+                                + totalBD.setScale(2, BigDecimal.ROUND_HALF_UP) + ","
+                                + discountBD.setScale(2, BigDecimal.ROUND_HALF_UP) + ","
                                 + record.getSalesDate().toString() + ","
                                 + record.getUserAttribute() + "\n";
 
