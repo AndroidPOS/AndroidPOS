@@ -4,6 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 import com.ricoh.pos.SalesDatabaseHelper;
@@ -38,6 +40,9 @@ public class WomanShopSalesIOManager {
 
     /** DBに格納する時の日付けフォーマット */
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    /** csファイルのMIMタイプ **/
+    private static final String CSV_MIME_TYPE = "text/comma-separated-values";
 
     //------------------------ private -----------------------------
     /** Singleton Instance */
@@ -399,19 +404,19 @@ public class WomanShopSalesIOManager {
         return deleted;
     }
 
-    public void exportCSV() throws IOException {
+    public void exportCSV(Context context) throws IOException {
         try {
             // 全件検索してファイルに出力。
             // FIXME;全件でいいの？ある日付け以降とかでなく。
             ArrayList<SingleSalesRecord> records = this.searchAll();
-            writeSalesData(records);
+            writeSalesData(context, records);
         }
         catch (Exception e) {
             Log.d("debug", "exportCSV Exception occuered.");
         }
     }
 
-    private void writeSalesData(ArrayList<SingleSalesRecord> records) throws IOException {
+    private void writeSalesData(Context context, ArrayList<SingleSalesRecord> records) throws IOException {
 
         String csvStoragePath = getCSVStoragePath();
         File csvStorage = new File(csvStoragePath);
@@ -483,6 +488,18 @@ public class WomanShopSalesIOManager {
             if (fos != null) {
                 fos.close();
             }
+
+            MediaScannerConnection.OnScanCompletedListener mScanCompletedListener = new MediaScannerConnection.OnScanCompletedListener() {
+                @Override
+                public void onScanCompleted(String path, Uri uri) {
+                    Log.d("MediaScannerConnection", "Scanned " + path + ":");
+                    Log.d("MediaScannerConnection", "-> uri=" + uri);
+                }
+            };
+            String targetMimeType = CSV_MIME_TYPE;
+            String[] paths = { Environment.getExternalStorageDirectory().getPath() + CSV_STORAGE_FOLDER + SALES_CSV_FILE_NAME };
+            String[] mimeTypes = { targetMimeType };
+            MediaScannerConnection.scanFile(context, paths, mimeTypes, mScanCompletedListener);
         }
     }
 

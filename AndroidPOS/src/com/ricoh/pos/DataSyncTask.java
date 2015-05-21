@@ -64,7 +64,7 @@ public class DataSyncTask extends AsyncTask<String, Void, AsyncTaskResult<String
             return AsyncTaskResult.createErrorResult(R.string.sd_import_error);
         }
         try {
-			WomanShopSalesIOManager.getInstance().exportCSV();
+			WomanShopSalesIOManager.getInstance().exportCSV(this.context);
 		} catch (Exception e) {
 			Log.d("debug", "export error", e);
 			return AsyncTaskResult.createErrorResult(R.string.sd_export_error);
