@@ -30,32 +30,28 @@ public class SalesDatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// DBバージョンアップ時のデータ移行を実装
 		if (oldVersion < newVersion) {
 			if (oldVersion == 1) {
 				db.execSQL("alter table " + WS_SALES_ORDER_TABLE_NAME
-						+ " add " + WomanShopSalesOrderDef.DISCOUNT.name() + " Real" );
+						+ " add " + WomanShopSalesOrderDef.DISCOUNT.name() + " Real");
 
 				WomanShopSalesIOManager womanShopSalesIoManager = WomanShopSalesIOManager.getInstance();
+				womanShopSalesIoManager.setDatabase(db);
 				ArrayList<SingleSalesRecord> sales = womanShopSalesIoManager.searchAll();
 				for (SingleSalesRecord sale : sales) {
 					if (sale.getDiscountValue() != 0) {
 						sale.calcDiscountAllocation();
 						ArrayList<Order> orders = sale.getAllOrders();
 						for (Order order : orders) {
-							double discount = order.getDiscount();
 							ContentValues value = new ContentValues();
-							//FIXME Where 句の条件のために Sales のID を取得できるようにする
-							String[] whereArgs = {"", order.getProductCode()};
-							value.put(WomanShopSalesOrderDef.DISCOUNT.name(), discount);
-							db.update(WS_SALES_ORDER_TABLE_NAME, value,
+							value.put(WomanShopSalesOrderDef.DISCOUNT.name(), order.getDiscount());
+							int update = db.update(WS_SALES_ORDER_TABLE_NAME, value,
 									WomanShopSalesOrderDef.SINGLE_SALES_ID.name() + " = ? and "
-											+ WomanShopSalesOrderDef.PRODUCT_CODE.name() + " = ?", whereArgs);
-							;
+											+ WomanShopSalesOrderDef.PRODUCT_CODE.name() + " = ?",
+									new String[]{String.valueOf(sale.getId()), order.getProductCode()});
 						}
 					}
 				}
-
 			}
 		}
 	}
@@ -68,7 +64,7 @@ public class SalesDatabaseHelper extends SQLiteOpenHelper {
 						+ WomanShopSalesDef.DISCOUNT.name() + " Real, "
 						+ WomanShopSalesDef.USER_AGES.name() + " Text)"
 		);
-		Log.d("debug", "SingleSales Table onCreate" );
+		Log.d("debug", "SingleSales Table onCreate");
 
 		db.execSQL("Create Table " + WS_SALES_ORDER_TABLE_NAME + " ("
 						+ "_id Integer Primary Key, "
@@ -81,6 +77,6 @@ public class SalesDatabaseHelper extends SQLiteOpenHelper {
 						+ WomanShopSalesOrderDef.DISCOUNT.name() + " Real, "
 						+ WomanShopSalesOrderDef.SINGLE_SALES_ID.name() + " Integer)"
 		);
-		Log.d("debug", "SingleSalesOrder table onCreate" );
+		Log.d("debug", "SingleSalesOrder table onCreate");
 	}
 }

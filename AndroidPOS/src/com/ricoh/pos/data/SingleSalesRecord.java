@@ -10,13 +10,19 @@ import java.util.Date;
 /**
  * 販売1件を表すクラス。
  * この中に複数のOrderが設定される
- *
  */
 public class SingleSalesRecord {
-	/** 販売日時 */
+
+	private long id;
+
+	/**
+	 * 販売日時
+	 */
 	private Date salesDate;
 
-	/** 値引き額 */
+	/**
+	 * 値引き額
+	 */
 	private double discountValue;
 
 	/**
@@ -24,31 +30,32 @@ public class SingleSalesRecord {
 	 */
 	private String userAttribute;
 
-	/** Orderの配列 */
+	/**
+	 * Orderの配列
+	 */
 	private ArrayList<Order> orders;
 
-
-	public SingleSalesRecord(Date date){
+	public SingleSalesRecord(Date date) {
 		orders = new ArrayList<Order>();
 		this.salesDate = date;
 		this.discountValue = 0;
 	}
-	
-	public void setOrders(ArrayList<Order> orderList){
+
+	public void setOrders(ArrayList<Order> orderList) {
 		this.orders = orderList;
 	}
 
-	public ArrayList<Order> getAllOrders(){
+	public ArrayList<Order> getAllOrders() {
 		return orders;
 	}
 
-	public void addOrder(Order order){
+	public void addOrder(Order order) {
 		if (order == null) {
 			throw new IllegalArgumentException("Order is null");
 		}
 		orders.add(order);
 	}
-	
+
 	public void setDiscountValue(double discountValue) {
 		this.discountValue = discountValue;
 	}
@@ -61,8 +68,7 @@ public class SingleSalesRecord {
 	 * 値引き額の総額を、個々のオーダーに割り振る処理。
 	 * これを通さないと、DBに割引額が反映されない。
 	 */
-	public void calcDiscountAllocation()
-	{
+	public void calcDiscountAllocation() {
 		// discountValue = 0なら値引きしてないのでなにもしない
 		//　利益が無い＝既に値引き処理済とみなして何もしない
 		if (getTotalRevenue() <= 0 || discountValue <= 0) {
@@ -94,6 +100,7 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売の売り上げ金額を返す
+	 *
 	 * @return
 	 */
 	public double getTotalSales() {
@@ -106,6 +113,7 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売の原価を計算する
+	 *
 	 * @return double 原価
 	 */
 	public double getTotalCost() {
@@ -118,21 +126,23 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売による利益（売り上げ-原価）を返す。このメソッドは値引きを考慮しない
+	 *
 	 * @return double 利益金額
 	 */
 	public double getTotalRevenue() {
 		return getTotalSales() - getTotalCost();
 	}
 
-	public Date getSalesDate(){
+	public Date getSalesDate() {
 		return salesDate;
 	}
 
 	/**
 	 * この販売のお客さんの属性を設定する
+	 *
 	 * @param attribute 属性文字列
 	 */
-	public void setUserAttribute(String attribute){
+	public void setUserAttribute(String attribute) {
 		if (attribute == null || attribute.length() == 0) {
 			throw new IllegalArgumentException("User attribute is illegal");
 		}
@@ -141,9 +151,18 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売のお客さんの属性を返す
+	 *
 	 * @return String
 	 */
-	public String getUserAttribute(){
+	public String getUserAttribute() {
 		return userAttribute;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 }

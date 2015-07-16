@@ -129,8 +129,8 @@ public class RegisterManager {
 		}
 		return totalCost;
 	}
-	
-	public double getTotalAmountAfterDiscount(){
+
+	public double getTotalAmountAfterDiscount() {
 		return getOriginalTotalAmount() - discountValue;
 	}
 
@@ -192,15 +192,15 @@ public class RegisterManager {
 	}
 
 
-	public void updateDiscountValue(double discountValue){
+	public void updateDiscountValue(double discountValue) {
 		this.discountValue = discountValue;
-        double totalCost = getOriginalTotalCost();
+		double totalCost = getOriginalTotalCost();
 		double totalAmount = getOriginalTotalAmount();
 		try {
 			if (discountValue >= (totalAmount - totalCost)) {
 				throw new IllegalArgumentException("discountValues is larger than totalCost");
 			}
-		}finally {
+		} finally {
 			notifyUpdateOrder();
 		}
 	}
