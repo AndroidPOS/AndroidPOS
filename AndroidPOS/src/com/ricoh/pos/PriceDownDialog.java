@@ -32,7 +32,7 @@ public class PriceDownDialog {
 	private String value = "";
 	private final String title = "Price Down";
 	private final String inputMessage = "Input down value";
-	
+
 	public String getValue() {
 		return value;
 	}
@@ -134,11 +134,9 @@ public class PriceDownDialog {
 		builder.setPositiveButton(activity.getString(R.string.ok), new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dlg, int sumthin) {
 				dlg.dismiss();
-				double discount_value = Double.parseDouble(value);
 				try {
-					RegisterManager.getInstance().updateDiscountValue(discount_value);
-				} catch (IllegalArgumentException e)
-				{
+					RegisterManager.getInstance().updateDiscountValue(value.isEmpty() ? 0 : Double.parseDouble(value));
+				} catch (IllegalArgumentException e) {
 					Toast.makeText(activity.getBaseContext(), R.string.discount_error, Toast.LENGTH_LONG).show();
 				}
 			}
