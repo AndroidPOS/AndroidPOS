@@ -1,9 +1,5 @@
 package com.ricoh.pos;
 
-import java.io.FileNotFoundException;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -93,10 +89,10 @@ public class CategoryDetailFragment extends ListFragment {
 		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 	}
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        setListAdapter(new ListAdapter(getActivity()));
+	@Override
+	public void onResume() {
+		super.onResume();
+		setListAdapter(new ListAdapter(getActivity()));
 	}
 
 	public class ListAdapter extends BaseAdapter {
@@ -132,14 +128,14 @@ public class CategoryDetailFragment extends ListFragment {
 
 			Product product = searchProductList.get(position);
 
-			setImageView(convertView,product);
-			setProductInformationView(convertView,product);
+			setImageView(convertView, product);
+			setProductInformationView(convertView, product);
 			setNumberOfOrderView(convertView, product);
-			
+
 			return convertView;
 		}
-		
-		private void setImageView(View convertView, final Product product){
+
+		private void setImageView(View convertView, final Product product) {
 			ImageView imageView = (ImageView) convertView.findViewById(R.id.photo);
 			imageView.setLayoutParams(new LinearLayout.LayoutParams(IMAGE_VIEW_SIZE, IMAGE_VIEW_SIZE));
 			imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -177,32 +173,39 @@ public class CategoryDetailFragment extends ListFragment {
 				//imageView.setImageBitmap(null);
 			}
 		}
-		
-		private void setProductInformationView(View convertView, Product product){
+
+		private void setProductInformationView(View convertView, Product product) {
 			TextView textView = (TextView) convertView.findViewById(R.id.filename);
-			textView.setPadding(10, 0, 0, 0);
 			String productName = product.getName();
 			if (productName == null || productName.length() == 0) {
 				throw new NullPointerException("Product name is not valid");
 			}
 			textView.setText(productName);
-			
+
 			NumberFormat.getInstance().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
 
 			TextView priceView = (TextView) convertView.findViewById(R.id.price);
-			priceView.setPadding(10, 0, 0, 0);
 			priceView.setText(NumberFormat.getInstance().format(product.getPrice()) + getString(R.string.currency_india));
+
+			TextView stockView = (TextView) convertView.findViewById(R.id.stock);
+			int stock = product.getStock();
+			stockView.setText(NumberFormat.getInstance().format(stock));
+			if (stock <= 0) {
+				stockView.setTextColor(getResources().getColor(R.color.warn));
+			} else {
+				stockView.setTextColor(getResources().getColor(android.R.color.black));
+			}
 		}
 
-		private void setNumberOfOrderView(View convertView, Product product){
-			
+		private void setNumberOfOrderView(View convertView, Product product) {
+
 			ProductEditText numberOfSalesText = (ProductEditText) convertView
 					.findViewById(R.id.numberOfSales);
 			numberOfSalesText.setProduct(product);
 			numberOfSalesText.setInputType(InputType.TYPE_CLASS_NUMBER);
 			numberOfSalesText.setImeOptions(EditorInfo.IME_ACTION_DONE);
 			numberOfSalesText.addTextChangedListener(new NumberOfSalesWatcher(numberOfSalesText));
-			
+
 			ProductButton plusBtn = (ProductButton) convertView.findViewById(R.id.plusButton);
 			plusBtn.setProduct(product);
 			plusBtn.setProductEditText(numberOfSalesText);
@@ -218,7 +221,7 @@ public class CategoryDetailFragment extends ListFragment {
 					editText.setText(NumberFormat.getInstance().format(numberOfOrder));
 				}
 			});
-			
+
 			ProductButton minusBtn = (ProductButton) convertView.findViewById(R.id.minusButton);
 			minusBtn.setProduct(product);
 			minusBtn.setProductEditText(numberOfSalesText);
@@ -238,14 +241,14 @@ public class CategoryDetailFragment extends ListFragment {
 					}
 				}
 			});
-			
+
 			Order order = registerManager.findOrderOfTheProduct(product);
 			if (order == null || order.getNumberOfOrder() == 0) {
 				numberOfSalesText.getEditableText().clear();
 			} else {
-				 int numberOfSales = order.getNumberOfOrder();
-				 NumberFormat.getInstance().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-				 numberOfSalesText.setText(NumberFormat.getInstance().format(numberOfSales));
+				int numberOfSales = order.getNumberOfOrder();
+				NumberFormat.getInstance().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
+				numberOfSalesText.setText(NumberFormat.getInstance().format(numberOfSales));
 			}
 		}
 	}

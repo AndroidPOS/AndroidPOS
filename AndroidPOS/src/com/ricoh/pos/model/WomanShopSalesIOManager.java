@@ -254,10 +254,11 @@ public class WomanShopSalesIOManager {
 					record.setUserAttribute(cursor.getString(JoinedTable.Sale.USER_AGES));
 				}
 
-				Product product = new Product(cursor.getString(JoinedTable.Order.PRODUCT_CODE), cursor.getString(JoinedTable.Order.CATEGORY_NAME), cursor.getString(JoinedTable.Order.PRODUCT_NAME));
-				product.setProductImagePath(cursor.getString(JoinedTable.Order.PRODUCT_CODE));
-				product.setOriginalCost(cursor.getDouble(JoinedTable.Order.PURCHASE_PRICE));
-				product.setPrice(cursor.getDouble(JoinedTable.Order.UNIT_PRICE));
+				Product product = new Product(cursor.getString(JoinedTable.Order.PRODUCT_CODE),
+						cursor.getString(JoinedTable.Order.PRODUCT_NAME),
+						cursor.getString(JoinedTable.Order.CATEGORY_NAME),
+						cursor.getDouble(JoinedTable.Order.PURCHASE_PRICE),
+						cursor.getDouble(JoinedTable.Order.UNIT_PRICE));
 
 				Order order = new Order(product, cursor.getInt(JoinedTable.Order.QTY));
 				order.setDiscount(cursor.getDouble(JoinedTable.Order.DISCOUNT));

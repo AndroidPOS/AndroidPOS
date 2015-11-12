@@ -25,23 +25,26 @@ public class Product {
 	private String imagePath;
 	private static String imageStorageFolder = "/Ricoh";
 
-	public Product(String code, String category, String name) {
-		if (code == null || code.length() == 0) {
-			throw new IllegalArgumentException("Passing code is not valid");
+	public Product(String code, String name, String category, double originalCost, double price) {
+		this(code, category, name, originalCost, price, 0);
+	}
+
+	public Product(String code, String name, String category, double originalCost, double price, int stock) {
+
+
+		if (code == null || code.isEmpty() || category == null || category.isEmpty() ||
+				name == null || name.isEmpty() || originalCost <= 0 || price <= 0 || stock < 0) {
+			throw new IllegalArgumentException("invalid params:code=" + code + "name=" + name + "category=" +
+					category + "originalCost=" + originalCost + "price=" + price + "stock=" + stock);
 		}
-		if (category == null || category.length() == 0) {
-			throw new IllegalArgumentException("Passing category is not valid");
-		}
-		if (name == null || name.length() == 0) {
-			throw new IllegalArgumentException("Passing name is not valid");
-		}
+
 		this.code = code;
 		this.category = category;
 		this.name = name;
-		this.originalCost = 0.0;
-		this.price = 0.0;
-		this.stock = 0;
-		this.imagePath = "";
+		this.originalCost = originalCost;
+		this.price = price;
+		this.stock = stock;
+		this.imagePath = code;
 	}
 
 	// /////////////////////////
@@ -119,7 +122,13 @@ public class Product {
 	@Override
 	public boolean equals(Object object) {
 		Product targetProduct = (Product) object;
-		return this.code.equals(targetProduct.getCode());
+		boolean sameCode = this.code.equals(targetProduct.getCode());
+		boolean sameCategory = this.category.equals(targetProduct.getCategory());
+		boolean sameName = this.name.equals(targetProduct.getName());
+		boolean sameOriginalCost = Double.compare(this.originalCost, targetProduct.getOriginalCost()) == 0;
+		boolean samePrice = Double.compare(this.price, targetProduct.getPrice()) == 0;
+
+		return sameCode && sameCategory && sameName && sameOriginalCost && samePrice;
 	}
 
 	private String getImageStoragePath() {

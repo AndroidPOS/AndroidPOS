@@ -34,7 +34,7 @@ public class OneDaySalesFragment extends Fragment {
 		double oneDayNetProfit = SalesRecordManager.getInstance().getOneDayTotalNetProfit(date);
 		
 		if(oneDayNetProfit < 0){
-			oneDayNetProfitView.setTextColor(getResources().getColor(R.color.deficit));
+			oneDayNetProfitView.setTextColor(getResources().getColor(R.color.warn));
 		}
 
 		NumberFormat format = NumberFormat.getInstance();
