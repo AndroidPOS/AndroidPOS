@@ -27,7 +27,7 @@ public class MainMenuActivity extends Activity implements DataSyncTaskCallback {
 		womanShopIOManager = new WomanShopIOManager();
 		databaseHelper = new DatabaseHelper(this);
 		womanShopIOManager.setDatabase(databaseHelper.getWritableDatabase());
-		
+
 		salesDatabaseHelper = new SalesDatabaseHelper(this);
 		WomanShopSalesIOManager.getInstance().setDatabase(salesDatabaseHelper.getWritableDatabase());
 
@@ -89,6 +89,7 @@ public class MainMenuActivity extends Activity implements DataSyncTaskCallback {
 	@Override
 	public void onFailedSyncData(int resId) {
 		Toast.makeText(this, resId, Toast.LENGTH_LONG).show();
+		setRegisterButtonEnabled();
 	}
 
 	private void setRegisterButtonEnabled() {

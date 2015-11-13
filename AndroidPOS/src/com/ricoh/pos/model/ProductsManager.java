@@ -3,7 +3,6 @@ package com.ricoh.pos.model;
 import android.util.Log;
 
 import com.ricoh.pos.data.Product;
-import com.ricoh.pos.data.WomanShopDataDef;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +25,7 @@ public class ProductsManager {
 	}
 
 	public void updateProducts(List<Product> products) {
+		productsMap.clear();
 		for (Product product : products) {
 			Log.d("debug", product.toString());
 			addNewProductInCategory(product.getCategory(), product);
@@ -46,8 +46,7 @@ public class ProductsManager {
 			ArrayList<Product> produtcsInCategory = productsMap.get(category);
 			for (Product registeredProduct : produtcsInCategory) {
 				if (registeredProduct.equals(product)) {
-					// TODO: Should update data
-					return;
+					throw new IllegalArgumentException("Conflicted Product:" + registeredProduct + "," + product);
 				}
 			}
 			produtcsInCategory.add(product);

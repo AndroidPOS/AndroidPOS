@@ -11,9 +11,12 @@ import com.ricoh.pos.data.WomanShopDataDef;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -60,6 +63,55 @@ public class WomanShopIOManager implements IOManager {
 		}
 	}
 
+	public void importCSV() throws IOException {
+		File original = getArrivedGoods();
+		File backup = backupArrivedGoods(original);
+
+		// import に失敗した行だけをもとの CSV ファイルに残す。そのために一度ファイルごと削除
+		FileUtils.forceDelete(original);
+
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(backup));
+
+			// skipping header
+			String header = reader.readLine();
+			String[] fieldNames = header.split(",");
+			for (String fieldName : fieldNames) {
+				Log.d("debug", fieldName);
+			}
+
+			// adding arrived goods to DB
+			String line;
+			while ((line = reader.readLine()) != null) {
+
+				String[] split = line.split(",");
+				String code = split[WomanShopDataDef.PRODUCT_CODE.ordinal()];
+				String name = split[WomanShopDataDef.ITEM_CATEGORY.ordinal()];
+				String category = split[WomanShopDataDef.PRODUCT_CATEGORY.ordinal()];
+				double originalCost = Double.valueOf(split[WomanShopDataDef.COST_TO_ENTREPRENEUR.ordinal()]);
+				double price = Double.valueOf(split[WomanShopDataDef.SALE_PRICE.ordinal()]);
+				int stock = Integer.valueOf(split[WomanShopDataDef.STOCK.ordinal()]);
+
+				Product product = new Product(code, name, category, originalCost, price, stock);
+
+				try {
+					stock(product);
+
+				} catch (IllegalArgumentException e) {
+					Log.e("error", "conflicted with a record in DB.", e);
+					FileUtils.write(original, line + "\n", Charset.forName("UTF-8"), true);
+				}
+			}
+
+		} finally {
+			if (reader != null) {
+				reader.close();
+			}
+		}
+
+	}
+
 	public Product searchById(String productId) {
 		Cursor cursor = null;
 
@@ -90,7 +142,7 @@ public class WomanShopIOManager implements IOManager {
 	 *
 	 * @param arrivedProduct
 	 */
-	public void stock(Product arrivedProduct) {
+	private void stock(Product arrivedProduct) {
 
 		Log.d("debug", "stocking" + arrivedProduct);
 
@@ -125,12 +177,12 @@ public class WomanShopIOManager implements IOManager {
 		}
 	}
 
-	public File getArrivedGoods() throws FileNotFoundException {
+	private File getArrivedGoods() throws FileNotFoundException {
 		String csvStoragePath = getCSVStoragePath();
 		return new File(csvStoragePath + "/Product.csv");
 	}
 
-	public File backupArrivedGoods(File original) throws IOException {
+	private File backupArrivedGoods(File original) throws IOException {
 		Calendar now = Calendar.getInstance();
 		int year = now.get(Calendar.YEAR);
 		int month = now.get(Calendar.MONTH) + 1;
