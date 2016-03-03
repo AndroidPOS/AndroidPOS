@@ -53,6 +53,7 @@ public class WomanShopFormatter {
 	public static long convertRupeeToPaisa(double rupee)
 	{
 		BigDecimal discount = new BigDecimal(rupee);
-		return discount.scaleByPowerOfTen(2).longValue();
+		// doubleからの変換なので、四捨五入で有効桁をパイサの範囲に変更してからスケールアップ
+		return discount.setScale(2, BigDecimal.ROUND_HALF_UP).scaleByPowerOfTen(2).longValue();
 	}
 }
