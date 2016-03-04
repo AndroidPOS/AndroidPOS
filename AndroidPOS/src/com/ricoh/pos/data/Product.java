@@ -19,35 +19,36 @@ public class Product {
 	private String code;
 	private String category;
 	private String name;
-	private double originalCost;
-	private double price;
+	private long originalCost;	// 原価。単位はパイサ。ルピー表示する場合は100で割ること
+	private long price;			// 販売価格。単位はパイサ。ルピー表示する場合は100で割ること
 	private int stock;
 	private String imagePath;
 	private static String imageStorageFolder = "/Ricoh";
 
-	public Product(String code, String category, String name) {
-		if (code == null || code.length() == 0) {
-			throw new IllegalArgumentException("Passing code is not valid");
+	public Product(String code, String name, String category, long originalCost, long price) {
+		this(code, name, category, originalCost, price, 0);
+	}
+
+	public Product(String code, String name, String category, long originalCost, long price, int stock) {
+		if (code == null || code.isEmpty() || category == null || category.isEmpty() ||
+			name == null || name.isEmpty() || originalCost <= 0 || price <= 0 || stock < 0) {
+			throw new IllegalArgumentException("invalid params:code=" + code + "name=" + name + "category=" +
+					category + "originalCost=" + originalCost + "price=" + price + "stock=" + stock);
 		}
-		if (category == null || category.length() == 0) {
-			throw new IllegalArgumentException("Passing category is not valid");
-		}
-		if (name == null || name.length() == 0) {
-			throw new IllegalArgumentException("Passing name is not valid");
-		}
+
 		this.code = code;
 		this.category = category;
 		this.name = name;
-		this.originalCost = 0.0;
-		this.price = 0.0;
-		this.stock = 0;
-		this.imagePath = "";
+		this.originalCost = originalCost;
+		this.price = price;
+		this.stock = stock;
+		this.imagePath = setProductImagePath(code);
 	}
 
 	// /////////////////////////
 	// Setter
 	// /////////////////////////
-	public void setOriginalCost(double cost) {
+	public void setOriginalCost(long cost) {
 
 		if (cost < 0) {
 			throw new IllegalArgumentException("Original cost should be over zero");
@@ -56,7 +57,7 @@ public class Product {
 		this.originalCost = cost;
 	}
 
-	public void setPrice(double price) {
+	public void setPrice(long price) {
 
 		if (price < 0) {
 			throw new IllegalArgumentException("Price should be over zero");
@@ -74,14 +75,14 @@ public class Product {
 		this.stock = stock;
 	}
 
-	public void setProductImagePath(String imagePath) {
+	public String setProductImagePath(String imagePath) {
 
-		if (imagePath == null || imagePath.length() == 0) {
+		if (imagePath == null || imagePath.isEmpty()) {
 			throw new IllegalArgumentException("Passing imagePath is not valid");
 		}
 
 		String imageStoragePath = getImageStoragePath();
-		this.imagePath = imageStoragePath + "/" + imagePath + ".jpg";
+		return imageStoragePath + "/" + imagePath + ".jpg";
 	}
 
 	// /////////////////////////
@@ -100,11 +101,11 @@ public class Product {
 		return this.name;
 	}
 
-	public double getOriginalCost() {
+	public long getOriginalCost() {
 		return this.originalCost;
 	}
 
-	public double getPrice() {
+	public long getPrice() {
 		return this.price;
 	}
 
@@ -119,7 +120,13 @@ public class Product {
 	@Override
 	public boolean equals(Object object) {
 		Product targetProduct = (Product) object;
-		return this.code.equals(targetProduct.getCode());
+		boolean sameCode = this.code.equals(targetProduct.getCode());
+		boolean sameCategory = this.category.equals(targetProduct.getCategory());
+		boolean sameName = this.name.equals(targetProduct.getName());
+		boolean sameOriginalCost = (this.originalCost == targetProduct.getOriginalCost());
+		boolean samePrice = (this.price == targetProduct.getPrice());
+
+		return sameCode && sameCategory && sameName && sameOriginalCost && samePrice;
 	}
 
 	private String getImageStoragePath() {
@@ -163,8 +170,8 @@ public class Product {
 		sb.append("code='").append(code).append("'");
 		sb.append(", category='").append(category).append("'");
 		sb.append(", name='").append(name).append("'");
-		sb.append(", originalCost=").append(originalCost);
-		sb.append(", price=").append(price);
+		sb.append(", originalCost=").append(WomanShopFormatter.convertPaisaToRupee(originalCost));
+		sb.append(", price=").append(WomanShopFormatter.convertPaisaToRupee(price));
 		sb.append(", stock=").append(stock);
 		sb.append(", imagePath='").append(imagePath).append("'");
 		sb.append("}");

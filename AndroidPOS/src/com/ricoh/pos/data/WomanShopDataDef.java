@@ -5,7 +5,8 @@ public enum WomanShopDataDef {
 	ITEM_CATEGORY("product_name"),
 	PRODUCT_CATEGORY("category_name"),
 	COST_TO_ENTREPRENEUR("unit_selling_price"),
-	SALE_PRICE("MRP");
+	SALE_PRICE("MRP"),
+	STOCK("stock");
 
 	private String name;
 	WomanShopDataDef(String name){ this.name = name;}

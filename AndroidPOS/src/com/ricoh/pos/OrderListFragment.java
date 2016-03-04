@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.ricoh.pos.data.Order;
 import com.ricoh.pos.data.Product;
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.ProductsManager;
 import com.ricoh.pos.model.RegisterManager;
 import com.ricoh.pos.model.UpdateOrderListListener;
@@ -56,7 +57,7 @@ public class OrderListFragment extends ListFragment implements UpdateOrderListLi
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		if (activity instanceof OnOrderClickListener == false) {
+		if (!(activity instanceof OnOrderClickListener)) {
 			throw new ClassCastException("OnOrderClickListener isn't implemented");
 		}
 		onOrderClickListener = (OnOrderClickListener) activity;
@@ -158,7 +159,8 @@ public class OrderListFragment extends ListFragment implements UpdateOrderListLi
 			TextView priceView = (TextView) convertView.findViewById(R.id.price);
 			priceView.setPadding(10, 0, 0, 0);
 			NumberFormat.getInstance().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-			priceView.setText(NumberFormat.getInstance().format(product.getPrice()));
+			priceView.setText(NumberFormat.getInstance().format(
+					WomanShopFormatter.convertPaisaToRupee(product.getPrice())));
 
 			final TextView numberOfSalseView = (TextView) convertView.findViewById(R.id.numberOfSales);
 			numberOfSalseView.setPadding(10, 0, 0, 0);

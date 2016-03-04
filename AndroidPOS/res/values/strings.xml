@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">RICOH POS 2.1.0</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">RICOH POS 2.2.0</string>
     <string name="title_category_list">Products</string>
     <string name="title_total_payment">Total</string>
     <string name="category_title_default">ALL</string>
     <string name="sync_success">Succeeded to import/export</string>
-    <string name="sd_import_error">Failed to import from SD!</string>
-    <string name="sd_export_error">Failed to export to SD!</string>
+    <string name="sd_import_error">Failed to import from SD! But export to SD success.</string>
+    <string name="sd_export_error">Import from SD success. But failed to export to SD!</string>
+    <string name="sd_import_export_error">Failed import and export with SD!</string>
+    <string name="data_error">Not all the data is imported.</string>
     <string name="dialog_data_syncro_message">Under synchronizing. Please wait</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -28,6 +28,16 @@
     <string name="success_deleted_message">Succeeded to delete sales record</string>
     <string name="error_deleted_message">Failed to delete sales record</string>
     <string name="sales_record_delete_confirm_message">Do you want to delete sales record?</string>
+    <string-array name="user_attribute_keys">
+        <item>10s Low</item>
+        <item>10s High</item>
+        <item>20s</item>
+        <item>30s</item>
+        <item>40s</item>
+        <item>50s</item>
+        <item>60s</item>
+        <item>Other</item>
+    </string-array>
     <string-array name="user_attributes">
         <item>10s Low</item>
         <item>10s High</item>
@@ -39,7 +49,6 @@
         <item>Other</item>
     </string-array>
     <string name="user_attribute_label">Attribute</string>
-
     <string name="category_name_1">Beauty Cosmetics</string>
     <string name="category_name_2">Garments</string>
     <string name="category_name_3">Hair and Accessories</string>
@@ -59,7 +68,16 @@
     <string name="category_name_17">Fabric</string>
     <string name="close">close</string>
     <string name="error_image_file_not_found">Product image is not found.</string>
-
     <string name="dialog_title_edit_number_of_order">Edit</string>
-
+    <string name="link_to_license_page">Library license</string>
+    <string name="library_name_commons_io">Apache Jakarta Commons IO</string>
+    <string name="copyright_commons_io">Copyright 2001-2007 The Apache Software Foundation</string>
+    <string name="failed_loading_the_license_text">failed loading the license text</string>
+    <string name="edit_stock_in_dialog_warning">the input number is not available</string>
+    <string name="edit_column_name_product_name">Product Name</string>
+    <string name="edit_column_name_price">Price [Rp]</string>
+    <string name="edit_column_name_cost">Cost [Rp]</string>
+    <string name="edit_column_name_stock">Stock</string>
+    <string name="ok_edit">Edit Stock</string>
+    <string name="cancel_edit">Cancel</string>
 </resources>

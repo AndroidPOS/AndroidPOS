@@ -21,9 +21,9 @@ public class SingleSalesRecord {
 	private Date salesDate;
 
 	/**
-	 * 値引き額
+	 * 値引き額(単位パイサ)
 	 */
-	private double discountValue;
+	private long discountPaisa;
 
 	/**
 	 * ユーザー属性
@@ -38,7 +38,7 @@ public class SingleSalesRecord {
 	public SingleSalesRecord(Date date) {
 		orders = new ArrayList<Order>();
 		this.salesDate = date;
-		this.discountValue = 0;
+		this.discountPaisa = 0;
 	}
 
 	public void setOrders(ArrayList<Order> orderList) {
@@ -56,12 +56,12 @@ public class SingleSalesRecord {
 		orders.add(order);
 	}
 
-	public void setDiscountValue(double discountValue) {
-		this.discountValue = discountValue;
+	public void setDiscountValue(long discountValue) {
+		this.discountPaisa = discountValue;
 	}
 
-	public double getDiscountValue() {
-		return discountValue;
+	public long getDiscountValue() {
+		return discountPaisa;
 	}
 
 	/**
@@ -69,42 +69,49 @@ public class SingleSalesRecord {
 	 * これを通さないと、DBに割引額が反映されない。
 	 */
 	public void calcDiscountAllocation() {
-		// discountValue = 0なら値引きしてないのでなにもしない
-		//　利益が無い＝既に値引き処理済とみなして何もしない
-		if (getTotalRevenue() <= 0 || discountValue <= 0) {
+		// discountValue = 0なら値引きしてないが、更新に対応するため全部の値引き額を0にリセット
+		if (discountPaisa <= 0) {
+			for (Order order : orders) {
+				order.setDiscount(0);
+			}
 			return;
 		}
 
-		double downPercent = discountValue / getTotalRevenue();
-		double totalDiscount = 0.0;
-
-		for (Order order : orders) {
-			// 小数2位で丸める
-			BigDecimal big = new BigDecimal(order.getRevenue(false) * downPercent);
-			double discount = big.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-
-			Log.d("debug", "discount set " + order.getProductName() + " :" + discount);
-			order.setDiscount(discount);
-			totalDiscount += discount;
+		//　利益が無い＝次に個々のOrderの値引き割合を計算できない＝既に値引き処理済とみなして何もしない
+		long revenue = getTotalRevenue();
+		if (revenue <= 0) {
+			return;
 		}
 
-		Log.d("debug", "discount total=" + totalDiscount + "/ set=" + discountValue);
+		BigDecimal discountDecimal = new BigDecimal(discountPaisa);
+		BigDecimal revenueDecimal = new BigDecimal(revenue);
 
-		// 端数がある場合の対処
-		if (totalDiscount != discountValue) {
-			// totalの方が大きい＝実際より大きく値引き額を設定＝値引き額を減らす必要がある
-			BigDecimal fraction = new BigDecimal(orders.get(0).getDiscount() - (totalDiscount - discountValue));
-			orders.get(0).setDiscount(fraction.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+		BigDecimal downPercentDecimal = discountDecimal.divide(revenueDecimal, 7, BigDecimal.ROUND_HALF_UP);
+		long totalDiscount = 0;
+
+		for (Order order : orders) {
+			BigDecimal orderRevenue = new BigDecimal(order.getRevenue(false));
+			//
+			long orderDiscount = orderRevenue.multiply(downPercentDecimal).setScale(0, BigDecimal.ROUND_HALF_UP).longValue();
+			Log.d("debug", "discount set " + order.getProductName() + " :" + orderDiscount);
+			order.setDiscount(orderDiscount);
+			totalDiscount += orderDiscount;
+		}
+
+		Log.d("debug", "discount total=" + totalDiscount + "/ set=" + discountPaisa);
+
+		// 端数がある場合、差額分だけ先頭Orderの値引き額を変動させる
+		if (totalDiscount != discountPaisa) {
+			orders.get(0).setDiscount(orders.get(0).getDiscount() - (totalDiscount - discountPaisa));
 		}
 	}
 
 	/**
 	 * この販売の売り上げ金額を返す
-	 *
-	 * @return
+	 * @return long 売り上げ(単位パイサ)
 	 */
-	public double getTotalSales() {
-		double totalSales = 0;
+	public long getTotalSales() {
+		long totalSales = 0;
 		for (Order order : orders) {
 			totalSales += order.getTotalAmount();
 		}
@@ -113,11 +120,10 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売の原価を計算する
-	 *
-	 * @return double 原価
+	 * @return long 原価(単位パイサ)
 	 */
-	public double getTotalCost() {
-		double totalCost = 0;
+	public long getTotalCost() {
+		long totalCost = 0;
 		for (Order order : orders) {
 			totalCost += order.getTotalCost();
 		}
@@ -126,13 +132,10 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売による利益（売り上げ-原価）を返す。このメソッドは値引きを考慮しない
-	 *
-	 * @return double 利益金額
+	 * @return long 利益金額(単位パイサ)
 	 */
-	public double getTotalRevenue() {
-		BigDecimal totalSales = BigDecimal.valueOf(getTotalSales());
-		BigDecimal totalCost = BigDecimal.valueOf(getTotalCost());
-		return totalSales.subtract(totalCost).doubleValue();
+	public long getTotalRevenue() {
+		return (getTotalSales() - getTotalCost());
 	}
 
 	public Date getSalesDate() {
@@ -141,7 +144,6 @@ public class SingleSalesRecord {
 
 	/**
 	 * この販売のお客さんの属性を設定する
-	 *
 	 * @param attribute 属性文字列
 	 */
 	public void setUserAttribute(String attribute) {

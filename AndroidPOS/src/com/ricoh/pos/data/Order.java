@@ -4,7 +4,10 @@ public class Order {
 
 	private Product product;
 	private int num;
-	private double discountValue;
+
+	// この商品売り上げにおける割引額。単位パイサ。ルピー表記する場合は100で割る
+	// 割引額はSingleSalesRecord1件につき１つ設定されて、そこから個々のオーダーに具体的な額が割り当てられる。
+	private long discountValue;
 
 	public Order(Product product, int numberOfOrder) {
 		if (product == null || numberOfOrder < 0) {
@@ -64,31 +67,31 @@ public class Order {
 		return product.getName();
 	}
 
-	public double getProductPrice() {
+	public long getProductPrice() {
 		return product.getPrice();
 	}
 
-	public double getTotalAmount() {
+	public long getTotalAmount() {
 		return product.getPrice() * num;
 	}
 
-	public double getTotalCost() {
+	public long getTotalCost() {
 		return product.getOriginalCost() * num;
 	}
 
-	public double getRevenue(boolean enableDisCount) {
-		double result = (product.getPrice() - product.getOriginalCost()) * num;
+	public long getRevenue(boolean enableDisCount) {
+		long result = (product.getPrice() - product.getOriginalCost()) * num;
 		if (enableDisCount) {
 			return (result - discountValue);
 		}
 		return result;
 	}
 
-	public void setDiscount(double discount) {
+	public void setDiscount(long discount) {
 		discountValue = discount;
 	}
 
-	public double getDiscount() {
+	public long getDiscount() {
 		return discountValue;
 	}
 
@@ -101,7 +104,7 @@ public class Order {
 		final StringBuilder sb = new StringBuilder("Order{");
 		sb.append("product=").append(product == null ? "null" : product);
 		sb.append(", num=").append(num);
-		sb.append(", discountValue=").append(discountValue);
+		sb.append(", discountValue=").append(WomanShopFormatter.convertPaisaToRupee(discountValue));
 		sb.append("}");
 		return sb.toString();
 	}

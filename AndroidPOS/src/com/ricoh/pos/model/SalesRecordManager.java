@@ -53,49 +53,56 @@ public class SalesRecordManager {
 
         return records.get(0);
     }
-	
-	public double getOneDayTotalSales(Date date){
+
+	/**
+	 * 指定された日付の総売り上げ額を取得する
+	 * @param date 日付データ
+	 * @return 指定された日付の総売り上げ額(単位パイサ)
+	 */
+	public long getOneDayTotalSales(Date date){
 		ArrayList<SingleSalesRecord> salesRecords = restoreSingleSalesRecordsOfTheDay(date);
-		BigDecimal totalSales = BigDecimal.valueOf(0.0);
+		long totalSales = 0;
 		for (SingleSalesRecord record : salesRecords) {
-			totalSales = totalSales.add(BigDecimal.valueOf(record.getTotalSales()));
+			totalSales += record.getTotalSales();
 		}
-		return totalSales.doubleValue();
+		return totalSales;
 	}
-	
-	public double getOneDayTotalRevenue(Date date){
+
+	/**
+	 * 指定された日付の総利益(値引き前)を取得する
+	 * @param date 日付データ
+	 * @return 指定された日付の総利益(単位パイサ)
+	 */
+	public long getOneDayTotalRevenue(Date date){
 		ArrayList<SingleSalesRecord> salesRecords = restoreSingleSalesRecordsOfTheDay(date);
-		BigDecimal totalRevenue = BigDecimal.valueOf(0.0);
+		long totalRevenue =0;
 		for (SingleSalesRecord record : salesRecords) {
-			totalRevenue = totalRevenue.add(BigDecimal.valueOf(record.getTotalRevenue()));
+			totalRevenue += record.getTotalRevenue();
 		}
-		return totalRevenue.doubleValue();
+		return totalRevenue;
 	}
 
 	/**
 	 * 指定された日付の総値引き額を取得する
 	 * @param date 日付データ
-	 * @return 指定された日付の総値引き額
+	 * @return 指定された日付の総値引き額(単位パイサ)
 	 */
-	public double getOneDayTotalDiscount(Date date) {
+	public long getOneDayTotalDiscount(Date date) {
 		ArrayList<SingleSalesRecord> salesRecords = restoreSingleSalesRecordsOfTheDay(date);
-		BigDecimal totalDiscount = BigDecimal.valueOf(0.0);
+		long totalDiscount = 0;;
 		for (SingleSalesRecord record : salesRecords) {
-			totalDiscount = totalDiscount.add(BigDecimal.valueOf(record.getDiscountValue()));
+			totalDiscount += record.getDiscountValue();
 		}
-		return totalDiscount.doubleValue();
+		return totalDiscount;
 	}
 
 	/**
 	 * 指定された日付の総純利益
 	 * @param date 日付データ
-	 * @return 指定された日付の総利益から総値引き額を除いた額
+	 * @return 指定された日付の総利益から総値引き額を除いた額(単位パイサ)
 	 */
-	public double getOneDayTotalNetProfit(Date date) {
-		BigDecimal oneDayTotalRevenue = BigDecimal.valueOf(getOneDayTotalRevenue(date));
-		BigDecimal oneDayTotalDiscount = BigDecimal.valueOf(getOneDayTotalDiscount(date));
-		return oneDayTotalRevenue.subtract(oneDayTotalDiscount).doubleValue();
-
+	public long getOneDayTotalNetProfit(Date date) {
+		return (getOneDayTotalRevenue(date) - getOneDayTotalDiscount(date));
 	}
 
 }

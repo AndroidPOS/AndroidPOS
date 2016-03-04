@@ -6,6 +6,7 @@ import com.ricoh.pos.data.Order;
 import com.ricoh.pos.data.OrderUpdateInfo;
 import com.ricoh.pos.data.Product;
 import com.ricoh.pos.data.SingleSalesRecord;
+import com.ricoh.pos.data.WomanShopFormatter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class RegisterManager {
 	private ArrayList<UpdateOrderListener> listeners;
 	private ArrayList<UpdateOrderListListener> orderListListeners;
 
-	private double discountValue;
+	private long discountValuePaisa;	// この販売の値引き額。単位パイサ。
 
 	private String userAttribute;
 
@@ -34,7 +35,6 @@ public class RegisterManager {
 		if (instance == null) {
 			instance = new RegisterManager();
 		}
-
 		return instance;
 	}
 
@@ -97,7 +97,7 @@ public class RegisterManager {
 				throw new IllegalStateException("UpdateOrderListener to register is null");
 			}
 			listener.notifyUpdateOrder(new OrderUpdateInfo(getOriginalTotalAmount()
-					, discountValue
+					, discountValuePaisa
 					, getTotalAmountAfterDiscount()));
 		}
 	}
@@ -115,24 +115,24 @@ public class RegisterManager {
 		}
 	}
 
-	public double getOriginalTotalAmount() {
-		BigDecimal totalAmount = BigDecimal.valueOf(0.0);
+	public long getOriginalTotalAmount() {
+		long totalAmount = 0;
 		for (Order order : orderList) {
-			totalAmount = totalAmount.add(BigDecimal.valueOf(order.getTotalAmount()));
+			totalAmount += order.getTotalAmount();
 		}
-		return totalAmount.doubleValue();
+		return totalAmount;
 	}
 
-	public double getOriginalTotalCost() {
-		BigDecimal totalCost = BigDecimal.valueOf(0.0);
+	public long getOriginalTotalCost() {
+		long totalCost = 0;
 		for (Order order : orderList) {
-			totalCost = totalCost.add(BigDecimal.valueOf(order.getTotalCost()));
+			totalCost += order.getTotalCost();
 		}
-		return totalCost.doubleValue();
+		return totalCost;
 	}
 
-	public double getTotalAmountAfterDiscount() {
-		return getOriginalTotalAmount() - discountValue;
+	public long getTotalAmountAfterDiscount() {
+		return getOriginalTotalAmount() - discountValuePaisa;
 	}
 
 	public int getTotalNumberOfOrder() {
@@ -145,7 +145,7 @@ public class RegisterManager {
 
 	public void clearAllOrders() {
 		orderList = new ArrayList<Order>();
-		discountValue = 0;
+		discountValuePaisa = 0;
 		userAttribute = null;
 	}
 
@@ -192,13 +192,14 @@ public class RegisterManager {
 		orderListListeners.clear();
 	}
 
-
-	public void updateDiscountValue(double discountValue) {
-		this.discountValue = discountValue;
-		BigDecimal totalCost = BigDecimal.valueOf(getOriginalTotalCost());
-		BigDecimal totalAmount = BigDecimal.valueOf(getOriginalTotalAmount());
+	/**
+	 * 値引きを設定する。
+	 * @param discountPisa 値引き額.単位パイサ
+	 */
+	public void updateDiscountValue(long discountPisa) {
+		this.discountValuePaisa = discountPisa;
 		try {
-			if (discountValue >= (totalAmount.subtract(totalCost)).doubleValue()) {
+			if (discountValuePaisa >= (getOriginalTotalAmount() - getOriginalTotalCost())) {
 				throw new IllegalArgumentException("discountValues is larger than totalCost");
 			}
 		} finally {
@@ -217,13 +218,13 @@ public class RegisterManager {
 	public SingleSalesRecord getSingleSalesRecord() {
 		SingleSalesRecord record = new SingleSalesRecord(new Date());
 		record.setOrders(orderList);
-		record.setDiscountValue(discountValue);
+		record.setDiscountValue(discountValuePaisa);
 		record.setUserAttribute(userAttribute);
 		return record;
 	}
 
 	public void clearDiscountValue() {
-		this.discountValue = 0;
+		this.discountValuePaisa = 0;
 	}
 
 }

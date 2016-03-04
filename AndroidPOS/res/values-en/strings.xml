@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">रिकोह पी ओ एस</string>
-    <string name="action_settings">सेटिंग्स</string>
     <string name="title_category_list">उत्पाद</string>
     <string name="title_total_payment">कुल</string>
     <string name="category_title_default">सब</string>
@@ -32,7 +31,7 @@
         <item>10 साल से कम</item>
         <item>10 साल से ज्यादा</item>
         <item>20 से 29 के बीच</item>
-        <item>30 से 39  के बीच</item>
+        <item>30 से 39 के बीच</item>
         <item>40 से 49 के बीच</item>
         <item>50 से 59 के बीच</item>
         <item>60 से 70 के बीच</item>

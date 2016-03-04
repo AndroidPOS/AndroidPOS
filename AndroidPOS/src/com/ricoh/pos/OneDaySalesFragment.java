@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.SalesCalenderManager;
 import com.ricoh.pos.model.SalesRecordManager;
 
@@ -22,28 +23,28 @@ public class OneDaySalesFragment extends Fragment {
 		Date date = SalesCalenderManager.getInstance().getSelectedSalesDate();
 
 		TextView oneDaySalesView = (TextView) v.findViewById(R.id.oneDaySales);
-		double oneDaySales = SalesRecordManager.getInstance().getOneDayTotalSales(date);
+		long oneDaySalesPaisa = SalesRecordManager.getInstance().getOneDayTotalSales(date);
 
 		TextView oneDayRevenueView = (TextView) v.findViewById(R.id.oneDayRevenue);
-		double oneDayRevenue = SalesRecordManager.getInstance().getOneDayTotalRevenue(date);
+		long oneDayRevenuePaisa = SalesRecordManager.getInstance().getOneDayTotalRevenue(date);
 		
 		TextView oneDayDiscountView = (TextView) v.findViewById(R.id.oneDayDiscount);
-		double oneDayDiscount = SalesRecordManager.getInstance().getOneDayTotalDiscount(date);
+		long oneDayDiscountPaisa = SalesRecordManager.getInstance().getOneDayTotalDiscount(date);
 
 		TextView oneDayNetProfitView = (TextView) v.findViewById(R.id.oneDayNetProfit);
-		double oneDayNetProfit = SalesRecordManager.getInstance().getOneDayTotalNetProfit(date);
+		long oneDayNetProfitPaisa = SalesRecordManager.getInstance().getOneDayTotalNetProfit(date);
 		
-		if(oneDayNetProfit < 0){
-			oneDayNetProfitView.setTextColor(getResources().getColor(R.color.deficit));
+		if(oneDayNetProfitPaisa < 0){
+			oneDayNetProfitView.setTextColor(getResources().getColor(R.color.warn));
 		}
 
 		NumberFormat format = NumberFormat.getInstance();
 		format.setMaximumFractionDigits(2);
 		
-		oneDaySalesView.setText(format.format(oneDaySales) + getString(R.string.currency_india));
-		oneDayRevenueView.setText(format.format(oneDayRevenue) + getString(R.string.currency_india));
-		oneDayDiscountView.setText(format.format(oneDayDiscount) + getString(R.string.currency_india));
-		oneDayNetProfitView.setText(format.format(oneDayNetProfit) + getString(R.string.currency_india));
+		oneDaySalesView.setText(format.format(WomanShopFormatter.convertPaisaToRupee(oneDaySalesPaisa)) + getString(R.string.currency_india));
+		oneDayRevenueView.setText(format.format(WomanShopFormatter.convertPaisaToRupee(oneDayRevenuePaisa)) + getString(R.string.currency_india));
+		oneDayDiscountView.setText(format.format(WomanShopFormatter.convertPaisaToRupee(oneDayDiscountPaisa)) + getString(R.string.currency_india));
+		oneDayNetProfitView.setText(format.format(WomanShopFormatter.convertPaisaToRupee(oneDayNetProfitPaisa)) + getString(R.string.currency_india));
 		
 		return v;
 	}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal"
+              android:padding="@dimen/common_padding">
+
+    <ImageView
+        android:id="@+id/photo"
+        android:layout_width="wrap_content"
+        android:layout_height="80sp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"/>
+
+    <TextView
+        android:id="@+id/filename"
+        style="@style/FontMiddle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"/>
+
+    <TextView
+        android:id="@+id/stock"
+        style="@style/FontMiddle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text=">"/>
+
+    <EditText
+        android:id="@+id/changing_stock_num"
+        style="@style/FontMiddle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+    <com.ricoh.pos.ProductButton
+        android:id="@+id/plusButton"
+        android:layout_width="@dimen/edit_dialog_btn_size"
+        android:layout_height="@dimen/edit_dialog_btn_size"
+        android:layout_marginLeft="@dimen/edit_dialog_plus_btn_margin"
+        android:adjustViewBounds="true"
+        android:background="@drawable/icn_numplus"
+        android:scaleType="fitCenter"/>
+
+    <com.ricoh.pos.ProductButton
+        android:id="@+id/minusButton"
+        android:layout_width="@dimen/edit_dialog_btn_size"
+        android:layout_height="@dimen/edit_dialog_btn_size"
+        android:layout_marginLeft="@dimen/edit_dialog_minus_btn_margin"
+        android:adjustViewBounds="true"
+        android:background="@drawable/icn_numminus"
+        android:scaleType="fitCenter"/>
+
+</LinearLayout>

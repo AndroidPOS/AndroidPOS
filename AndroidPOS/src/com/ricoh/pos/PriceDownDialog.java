@@ -10,7 +10,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.RegisterManager;
+
+import java.math.BigDecimal;
 
 public class PriceDownDialog {
 	static TextView prompt;
@@ -135,7 +138,7 @@ public class PriceDownDialog {
 			public void onClick(DialogInterface dlg, int sumthin) {
 				dlg.dismiss();
 				try {
-					RegisterManager.getInstance().updateDiscountValue(value.isEmpty() ? 0 : Double.parseDouble(value));
+					RegisterManager.getInstance().updateDiscountValue(WomanShopFormatter.convertRupeeToPaisa(value));
 				} catch (IllegalArgumentException e) {
 					Toast.makeText(activity.getBaseContext(), R.string.discount_error, Toast.LENGTH_LONG).show();
 				}
@@ -153,5 +156,4 @@ public class PriceDownDialog {
 		value = value + inNumb;
 		promptValue.setText(promptValue.getText() + inNumb);
 	}
-
 }

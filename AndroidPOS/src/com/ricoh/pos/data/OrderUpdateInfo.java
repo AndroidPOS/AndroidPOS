@@ -1,25 +1,25 @@
 package com.ricoh.pos.data;
 
 public class OrderUpdateInfo {
-	private double totalAmountBeforeDiscount;
-	private double discountAmount;
-	private double totalAmountAfterDiscount;
+	private long totalAmountBeforeDiscount;	// 割引前の総額。単位パイサ。
+	private long discountAmount;				// 割引額。単位パイサ。
+	private long totalAmountAfterDiscount;		// 割引後の総額。単位パイサ。
 	
-	public OrderUpdateInfo(double totalAmountBeforeDiscount, double discountAmount, double totalAmountAfterDiscount) {
+	public OrderUpdateInfo(long totalAmountBeforeDiscount, long discountAmount, long totalAmountAfterDiscount) {
 		this.totalAmountBeforeDiscount = totalAmountBeforeDiscount;
 		this.discountAmount = discountAmount;
 		this.totalAmountAfterDiscount = totalAmountAfterDiscount;
 	}
 	
-	public double getTotalAmountBeforeDiscount() {
+	public long getTotalAmountBeforeDiscount() {
 		return totalAmountBeforeDiscount;
 	}
 	
-	public double getDiscountAmount() {
+	public long getDiscountAmount() {
 		return discountAmount;
 	}
 	
-	public double getTotalAmountAfterDiscount() {
+	public long getTotalAmountAfterDiscount() {
 		return totalAmountAfterDiscount;
 	}
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
@@ -14,6 +15,7 @@ import com.ricoh.pos.SalesDatabaseHelper;
 import com.ricoh.pos.data.Order;
 import com.ricoh.pos.data.Product;
 import com.ricoh.pos.data.SingleSalesRecord;
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.data.WomanShopSalesDef;
 import com.ricoh.pos.data.WomanShopSalesOrderDef;
 
@@ -34,7 +36,7 @@ import java.util.Date;
  * 販売実績DBのコントローラークラス。元の名前はWomanShopSalesIOManager
  * 必要な操作は大体ここで出来るはず
  */
-public class WomanShopSalesIOManager {
+public class WomanShopSalesIOManager implements IOManager {
 	/**
 	 * ドリシティ向けに出力する販売実績CSVのファイル名
 	 */
@@ -153,26 +155,6 @@ public class WomanShopSalesIOManager {
 		return DatabaseUtils.queryNumEntries(salesDatabase, SalesDatabaseHelper.WS_SALES_TABLE_NAME);
 	}
 
-	private String makeBasicQuery() {
-
-		StringBuilder query = new StringBuilder("select ");
-
-		for (String column : JoinedTable.COLUMNS) {
-			query.append(column).append(", ");
-		}
-		query.delete(query.length() - 2, query.length());
-		query.append(" from ");
-		query.append(SalesDatabaseHelper.WS_SALES_TABLE_NAME);
-		query.append(" left join ");
-		query.append(SalesDatabaseHelper.WS_SALES_ORDER_TABLE_NAME);
-		query.append(" on ");
-		query.append(SalesDatabaseHelper.WS_SALES_TABLE_NAME).append(".ROWID = ");
-		query.append(JoinedTable.COLUMNS[JoinedTable.Order.SINGLE_SALES_ID]);
-
-		return new String(query);
-	}
-
-
 	/**
 	 * DBから全件検索
 	 *
@@ -181,10 +163,20 @@ public class WomanShopSalesIOManager {
 	public ArrayList<SingleSalesRecord> searchAll() {
 		Cursor cursor = null;
 
-		String query = makeBasicQuery();
-		cursor = salesDatabase.rawQuery(query, new String[]{});
+		SQLiteQueryBuilder query = new SQLiteQueryBuilder();
+		query.setTables(
+			SalesDatabaseHelper.WS_SALES_TABLE_NAME +
+			" left join " +
+			SalesDatabaseHelper.WS_SALES_ORDER_TABLE_NAME +
+			" on " +
+			SalesDatabaseHelper.WS_SALES_TABLE_NAME +
+			".ROWID = "	+ JoinedTable.COLUMNS[JoinedTable.Order.SINGLE_SALES_ID]
+		);
+		cursor = query.query(salesDatabase, JoinedTable.COLUMNS, null, null, null, null, null, null);
 
-		return makeSalesList(cursor);
+		ArrayList<SingleSalesRecord> sales = makeSalesList(cursor);
+		cursor.close();
+		return sales;
 	}
 
 	/**
@@ -196,9 +188,19 @@ public class WomanShopSalesIOManager {
 	 */
 	public ArrayList<SingleSalesRecord> searchByDate(Date date, boolean effectiveDay) {
 		Cursor cursor = null;
-		String query = makeBasicQuery();
+
+		SQLiteQueryBuilder query = new SQLiteQueryBuilder();
+		query.setTables(
+			SalesDatabaseHelper.WS_SALES_TABLE_NAME +
+			" left join " +
+			SalesDatabaseHelper.WS_SALES_ORDER_TABLE_NAME +
+			" on " +
+			SalesDatabaseHelper.WS_SALES_TABLE_NAME +
+			".ROWID = "	+ JoinedTable.COLUMNS[JoinedTable.Order.SINGLE_SALES_ID]
+		);
 
 		if (effectiveDay) {
+			//今日の範囲で検索
 			Calendar start = Calendar.getInstance();
 			start.setTime(date);
 			start.set(Calendar.HOUR, 0);
@@ -213,21 +215,22 @@ public class WomanShopSalesIOManager {
 			end.set(Calendar.SECOND, 59);
 			end.set(Calendar.MILLISECOND, 0);
 
-			query = query + " where "
-					+ JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + " >= ? and "
-					+ JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + "<= ?";
 			String[] params = {DATE_FORMAT.format(start.getTime()), DATE_FORMAT.format(end.getTime())};
 
-			cursor = salesDatabase.rawQuery(query, params);
+			cursor = query.query(salesDatabase, JoinedTable.COLUMNS,
+					JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + " >= ? and " + JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + "<= ?",
+					params, null, null, null, null);
 		} else {
-			query = query + " where " + JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + " = ?";
+			// 指定日の範囲を検索
 			String[] params = {DATE_FORMAT.format(date)};
-
-			cursor = salesDatabase.rawQuery(query, params);
+			cursor = query.query(salesDatabase, JoinedTable.COLUMNS,
+					JoinedTable.COLUMNS[JoinedTable.Sale.DATE] + " = ?",
+					params, null, null, null, null);
 		}
 
-		return makeSalesList(cursor);
-
+		ArrayList<SingleSalesRecord> sales = makeSalesList(cursor);
+		cursor.close();
+		return sales;
 	}
 
 	private ArrayList<SingleSalesRecord> makeSalesList(Cursor cursor) {
@@ -250,17 +253,18 @@ public class WomanShopSalesIOManager {
 					Date salesDate = DATE_FORMAT.parse(cursor.getString(JoinedTable.Sale.DATE));
 					record = new SingleSalesRecord(salesDate);
 					record.setId(salesId);
-					record.setDiscountValue(cursor.getDouble(JoinedTable.Sale.DISCOUNT));
+					record.setDiscountValue(cursor.getLong(JoinedTable.Sale.DISCOUNT));
 					record.setUserAttribute(cursor.getString(JoinedTable.Sale.USER_AGES));
 				}
 
-				Product product = new Product(cursor.getString(JoinedTable.Order.PRODUCT_CODE), cursor.getString(JoinedTable.Order.CATEGORY_NAME), cursor.getString(JoinedTable.Order.PRODUCT_NAME));
-				product.setProductImagePath(cursor.getString(JoinedTable.Order.PRODUCT_CODE));
-				product.setOriginalCost(cursor.getDouble(JoinedTable.Order.PURCHASE_PRICE));
-				product.setPrice(cursor.getDouble(JoinedTable.Order.UNIT_PRICE));
+				Product product = new Product(cursor.getString(JoinedTable.Order.PRODUCT_CODE),
+						cursor.getString(JoinedTable.Order.PRODUCT_NAME),
+						cursor.getString(JoinedTable.Order.CATEGORY_NAME),
+						cursor.getLong(JoinedTable.Order.PURCHASE_PRICE),
+						cursor.getLong(JoinedTable.Order.UNIT_PRICE));
 
 				Order order = new Order(product, cursor.getInt(JoinedTable.Order.QTY));
-				order.setDiscount(cursor.getDouble(JoinedTable.Order.DISCOUNT));
+				order.setDiscount(cursor.getLong(JoinedTable.Order.DISCOUNT));
 
 				record.addOrder(order);
 
@@ -275,12 +279,7 @@ public class WomanShopSalesIOManager {
 
 		} catch (ParseException pe) {
 			Log.d("debug", "salseDate parse fail.", pe);
-		} finally {
-			if (cursor != null) {
-				cursor.close();
-			}
 		}
-
 		return sales;
 	}
 
@@ -401,8 +400,9 @@ public class WomanShopSalesIOManager {
 			// FIXME;全件でいいの？ある日付け以降とかでなく。
 			ArrayList<SingleSalesRecord> records = this.searchAll();
 			writeSalesData(context, records);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			Log.d("debug", "exportCSV Exception occuered.", e);
+			throw e;
 		}
 	}
 
@@ -429,19 +429,14 @@ public class WomanShopSalesIOManager {
 				fos.write(0xef);
 				fos.write(0xbb);
 				fos.write(0xbf);
-				fileWriter = new OutputStreamWriter(fos, "UTF-8");
+				fileWriter = new OutputStreamWriter(fos, DEFAULT_CHARSET);
 			} catch (FileNotFoundException e) {
 				Log.d("debug", "sales.csv is not found", e);
 				throw e;
 			} catch (UnsupportedEncodingException e) {
-				Log.d("debug", "UTF-8 unsupported", e);
+				Log.d("debug", DEFAULT_CHARSET.displayName() + " is unsupported", e);
 				throw e;
 			}
-			/*
-			catch (IOException e) {
-                Log.d("debug", "file write error", e);
-                throw e;
-            }*/
 
 			try {
 				for (SingleSalesRecord record : records) {
@@ -451,13 +446,14 @@ public class WomanShopSalesIOManager {
 						Order order = orders.get(orderNo);
 						Product product = order.getProduct();
 
+						// CSV出力する際に、金額を単位変換する。
 						String result = product.getCode() + ","
 								+ product.getCategory() + ","
 								+ product.getName() + ","
 								+ order.getNumberOfOrder() + ","
-								+ String.format("%.2f", product.getPrice()) + ","
-								+ String.format("%.2f", product.getPrice() * order.getNumberOfOrder()) + ","
-								+ String.format("%.2f", order.getDiscount()) + ","
+								+ String.format("%.2f", WomanShopFormatter.convertPaisaToRupee(product.getPrice())) + ","
+								+ String.format("%.2f", WomanShopFormatter.convertPaisaToRupee(product.getPrice() * order.getNumberOfOrder())) + ","
+								+ String.format("%.2f", WomanShopFormatter.convertPaisaToRupee(order.getDiscount())) + ","
 								+ record.getSalesDate().toString() + ","
 								+ record.getUserAttribute() + "\n";
 

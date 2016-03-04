@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ricoh.pos.data.OrderUpdateInfo;
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.RegisterManager;
 import com.ricoh.pos.model.UpdateOrderListener;
 
@@ -62,9 +63,10 @@ public class TotalPaymentFragment extends Fragment implements UpdateOrderListene
 	public void notifyUpdateOrder(OrderUpdateInfo orderInfo) {
 		TextView totalPaymentView = (TextView) getView().findViewById(R.id.totalPaymentView);
 
+		double totalAmountRupee = WomanShopFormatter.convertPaisaToRupee(orderInfo.getTotalAmountBeforeDiscount());
 		NumberFormat format = NumberFormat.getInstance();
 		format.setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-		totalPaymentView.setText(format.format(orderInfo.getTotalAmountBeforeDiscount()) + getString(R.string.currency_india));
+		totalPaymentView.setText(format.format(totalAmountRupee) + getString(R.string.currency_india));
 	}
 
 	@Override

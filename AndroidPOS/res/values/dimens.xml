@@ -1,9 +1,12 @@
 <resources>
-
-    <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="common_padding">10dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="register_confirm_table_row_value_row_width">400dp</dimen>
-
+    <dimen name="edit_column_picture_width">120px</dimen>
+    <dimen name="edit_column_height">72dp</dimen>
+    <dimen name="edit_column_picture_adapter">60dp</dimen>
+    <dimen name="edit_dialog_btn_size">40dp</dimen>
+    <dimen name="edit_dialog_plus_btn_margin">30dp</dimen>
+    <dimen name="edit_dialog_minus_btn_margin">20dp</dimen>
 </resources>

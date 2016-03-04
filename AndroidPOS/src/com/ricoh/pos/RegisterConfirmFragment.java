@@ -17,9 +17,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.ricoh.pos.data.OrderUpdateInfo;
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.RegisterManager;
 import com.ricoh.pos.model.UpdateOrderListener;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 
 public class RegisterConfirmFragment extends Fragment implements UpdateOrderListener{
@@ -72,7 +74,7 @@ public class RegisterConfirmFragment extends Fragment implements UpdateOrderList
 			}
 		});
 		
-		double totalAmount = registerManager.getOriginalTotalAmount();
+		long totalAmount = registerManager.getOriginalTotalAmount();
 		updateTotalAmount(v, totalAmount, totalAmount);
 		
 		// Add Spinner for User Attributes 
@@ -84,7 +86,7 @@ public class RegisterConfirmFragment extends Fragment implements UpdateOrderList
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Spinner spinner = (Spinner) parent;
                 String selectedAttribute = userAttributes[spinner.getSelectedItemPosition()];
-                registerManager.setUserAttribute(selectedAttribute);
+                registerManager.setUserAttribute(getName(selectedAttribute));
 ;            }
 
 			@Override
@@ -93,9 +95,19 @@ public class RegisterConfirmFragment extends Fragment implements UpdateOrderList
 			}
         });
 	    userAttributesSpinner.setAdapter(adapter);
-	    
-		
 		return v;
+	}
+	
+	private String getName(String selectedAttribute){
+
+		String[] userAttributeKeys = getResources().getStringArray(R.array.user_attribute_keys);
+		for(int i = 0; i<userAttributes.length;i++){
+			if(userAttributes[i].equals(selectedAttribute)){
+				return userAttributeKeys[i];
+			}
+		}
+		
+		return null;
 	}
 
 	@Override
@@ -111,15 +123,18 @@ public class RegisterConfirmFragment extends Fragment implements UpdateOrderList
 				orderInfo.getTotalAmountAfterDiscount());
 	}
 	
-	private void updateTotalAmount(View view, double totalPayment, double totalPaymentAfterDiscount)
+	private void updateTotalAmount(View view, long totalPayment, long totalPaymentAfterDiscount)
 	{
+		double totalPaymentRupee = WomanShopFormatter.convertPaisaToRupee(totalPayment);
+		double totalPaymentRupeeAfterDiscount = WomanShopFormatter.convertPaisaToRupee(totalPaymentAfterDiscount);
+
 		TextView totalPaymentView = (TextView) view.findViewById(R.id.beforwTotalAmountView);
 		NumberFormat format = NumberFormat.getInstance();
 		format.setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-		totalPaymentView.setText(format.format(totalPayment) + getString(R.string.currency_india));
+		totalPaymentView.setText(format.format(totalPaymentRupee) + getString(R.string.currency_india));
 		
 		TextView totalPaymentViewAfterDiscount = (TextView) view.findViewById(R.id.totalPaymentView);
-		totalPaymentViewAfterDiscount.setText(format.format(totalPaymentAfterDiscount) + getString(R.string.currency_india));
+		totalPaymentViewAfterDiscount.setText(format.format(totalPaymentRupeeAfterDiscount) + getString(R.string.currency_india));
 	}
 
 	public interface OnButtonClickListener { 
@@ -139,13 +154,10 @@ public class RegisterConfirmFragment extends Fragment implements UpdateOrderList
 
 		@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
-			if (s.length() == 0) {
-				registerManager.updateDiscountValue(0);
-			} else {
-				try {
-					registerManager.updateDiscountValue(Double.parseDouble(s.toString()));
-				} catch (IllegalArgumentException e) {
-				}
+			try {
+				registerManager.updateDiscountValue(WomanShopFormatter.convertRupeeToPaisa(s.toString()));
+			} catch (IllegalArgumentException e) {
+
 			}
 		}
 	}

@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.ricoh.pos.data.Order;
 import com.ricoh.pos.data.Product;
 import com.ricoh.pos.data.SingleSalesRecord;
+import com.ricoh.pos.data.WomanShopFormatter;
 import com.ricoh.pos.model.SalesCalenderManager;
 import com.ricoh.pos.model.SalesRecordManager;
 
@@ -117,7 +118,8 @@ public class SalesRecordDetailFragment extends ListFragment {
 			TextView priceView = (TextView) convertView.findViewById(R.id.price);
 			priceView.setPadding(10, 0, 0, 0);
 			NumberFormat.getInstance().setMaximumFractionDigits(MAXIMUM_FRACTION_DIGITS);
-			priceView.setText(NumberFormat.getInstance().format(product.getPrice()));
+			priceView.setText(NumberFormat.getInstance().format(
+					WomanShopFormatter.convertPaisaToRupee(product.getPrice())));
 
 			TextView numberOfSalseView = (TextView) convertView.findViewById(R.id.numberOfSales);
 			numberOfSalseView.setPadding(10, 0, 0, 0);

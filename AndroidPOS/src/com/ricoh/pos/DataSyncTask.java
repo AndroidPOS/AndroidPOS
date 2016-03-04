@@ -4,13 +4,17 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
+import com.ricoh.pos.data.Product;
 import com.ricoh.pos.model.ProductsManager;
 import com.ricoh.pos.model.WomanShopIOManager;
 import com.ricoh.pos.model.WomanShopSalesIOManager;
 
-import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.List;
 
+/**
+ * 同期処理の本体
+ */
 public class DataSyncTask extends AsyncTask<String, Void, AsyncTaskResult<String>> {
 	final String TAG = "DataSyncTask";
 	DataSyncTaskCallback callback;
@@ -19,8 +23,7 @@ public class DataSyncTask extends AsyncTask<String, Void, AsyncTaskResult<String
 	WomanShopIOManager womanShopIOManager;
 	ProductsManager productsManager;
 
-	public DataSyncTask(Context context, DataSyncTaskCallback callback,
-			WomanShopIOManager womanShopIOManager) {
+	public DataSyncTask(Context context, DataSyncTaskCallback callback, WomanShopIOManager womanShopIOManager) {
 		this.callback = callback;
 		this.context = context;
 		this.womanShopIOManager = womanShopIOManager;
@@ -42,32 +45,47 @@ public class DataSyncTask extends AsyncTask<String, Void, AsyncTaskResult<String
 	@Override
 	protected AsyncTaskResult<String> doInBackground(String... params) {
 		Log.d(TAG, "doInBackground");
+		Log.d("debug", "SyncButton click");
+		boolean isImportFail = false;
+		boolean isExportFail = false;
+		boolean isDataFail = false;
+
+		// CSV から入荷商品を読み込んで DB に登録。
 		try {
-			Log.d("debug", "SyncButton click");
+			womanShopIOManager.importCSV();
+		} catch (IOException e) {
+			Log.d("debug", "import error", e);
+			isImportFail = true;
+		}catch (IllegalArgumentException e) {
+			Log.d("debug", "import error partially", e);
+			isDataFail = true;
+		}
 
-			//AssetManager assetManager = context.getResources().getAssets();
-			//BufferedReader bufferReader = womanShopIOManager.importCSVfromAssets(assetManager);
-			BufferedReader bufferReader = womanShopIOManager.importCSVfromSD();
-			if (bufferReader == null) {
-				Log.d("debug", "File not found");
-				return AsyncTaskResult.createErrorResult(R.string.sd_import_error);
-			}
-			womanShopIOManager.insertRecords(bufferReader);
-
-			String[] results = womanShopIOManager.searchAlldata();
-			for (String result : results) {
-				Log.d("debug", result);
-			}
-			productsManager.updateProducts(results);
-        } catch(Exception e) {
-            Log.d("debug", "import error", e);
-            return AsyncTaskResult.createErrorResult(R.string.sd_import_error);
-        }
-        try {
+		// 販売履歴DBの内容をexportする
+		try {
 			WomanShopSalesIOManager.getInstance().exportCSV(this.context);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			Log.d("debug", "export error", e);
+			isExportFail = true;
+		}
+
+		// 在庫DBを検索して、画面表示用にデータモデルを生成する。
+		// やらないと画面が表示できないので、エラーの有無に関わらず実施。
+
+		List<Product> productsInDb = womanShopIOManager.searchAll();
+		productsManager.updateProducts(productsInDb);
+
+		if (isImportFail && isExportFail) {
+			return AsyncTaskResult.createErrorResult(R.string.sd_import_export_error);
+		}
+		if (isExportFail) {
 			return AsyncTaskResult.createErrorResult(R.string.sd_export_error);
+		}
+		if (isImportFail) {
+			return AsyncTaskResult.createErrorResult(R.string.sd_import_error);
+		}
+		if (isDataFail) {
+			return AsyncTaskResult.createErrorResult(R.string.data_error);
 		}
 		// The argument is null because nothing to notify on success
 		return AsyncTaskResult.createNormalResult(null);
@@ -78,7 +96,7 @@ public class DataSyncTask extends AsyncTask<String, Void, AsyncTaskResult<String
 		Log.d(TAG, "onPostExecute");
 		if (progressDialog.isShowing()) {
 			progressDialog.dismiss();
-			
+
 			if (result.isError()) {
 				callback.onFailedSyncData(result.getResourceId());
 			} else {
